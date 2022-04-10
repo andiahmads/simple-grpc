@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/andiahmads/simple-grpc/calculator/calculatorpb"
@@ -21,7 +22,12 @@ func main() {
 	defer conn.Close()
 
 	c := calculatorpb.NewCalculatorServiceClient(conn)
-	DoUnary(c)
+
+	// unary api
+	// DoUnary(c)
+
+	//streaming server
+	DoStreamingServer(c)
 
 }
 
@@ -37,6 +43,33 @@ func DoUnary(c calculatorpb.CalculatorServiceClient) {
 	if err != nil {
 		log.Fatalf("error while calling RPC %v", err)
 	}
-	log.Fatalf("response from Greet %v", res.SumResult)
+	log.Fatalf("response from Greet %v", res.GetSumResult())
+
+}
+
+func DoStreamingServer(c calculatorpb.CalculatorServiceClient) {
+	fmt.Println("Starting to do Streaming RPC...")
+
+	req := &calculatorpb.PrimeNumberDecompositonRequest{
+		Number: 120,
+	}
+
+	resStream, err := c.PrimeNumberDecompositon(context.Background(), req)
+	if err != nil {
+		if err != nil {
+			log.Fatalf("error while calling RPC %v", err)
+		}
+	}
+	for {
+		msg, err := resStream.Recv()
+		if err == io.EOF {
+			// we've reached the end of stream
+			break
+		}
+		if err != nil {
+			log.Fatalf("error while reading stream:%v", err)
+		}
+		log.Println(msg.PrimeFactor)
+	}
 
 }
