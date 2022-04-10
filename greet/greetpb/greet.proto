@@ -26,6 +26,15 @@ message GreateManyTimesResponse{
     string result = 1;
 }
 
+message LongGreateRequest{
+    Greeting greeting =1;
+}
+
+message LongGreateResponse{
+    string result = 1;
+}
+
+
 service GreetService{
 
     //unary
@@ -33,4 +42,8 @@ service GreetService{
 
     //streaming server
     rpc GreateManyTime(GreateManyTimesRequest) returns (stream GreateManyTimesResponse) {};
+
+    //streaming client
+    //note: jika client stream, maka method stream didefinisikan diawal
+    rpc LongGreate(stream LongGreateRequest) returns (LongGreateResponse) {};
 }
