@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
+	"time"
 
 	"github.com/andiahmads/simple-grpc/calculator/calculatorpb"
 	"google.golang.org/grpc"
@@ -24,7 +26,9 @@ func main() {
 	// DoUnary(c)
 
 	//do client streaming
-	DoClientStreaming(c)
+	// DoClientStreaming(c)
+
+	DoBidiStreaming(c)
 
 }
 
@@ -68,5 +72,52 @@ func DoClientStreaming(c calculatorpb.CalculatorServiceClient) {
 	}
 
 	fmt.Printf("the average is: %v", res.GetAverage())
+
+}
+
+func DoBidiStreaming(c calculatorpb.CalculatorServiceClient) {
+	fmt.Println("starting to do a FindMaximum Bidi streaming RPC....")
+
+	stream, err := c.FindMaximum(context.Background())
+
+	if err != nil {
+		log.Fatalf("Error while opening stream and calling FindMaximum: %v", err)
+
+	}
+
+	waitc := make(chan struct{})
+
+	//send go routine
+
+	go func() {
+		numbers := []int32{4, 7, 2, 19, 4, 6, 32}
+		for _, number := range numbers {
+			fmt.Printf("sending number:%v\n", number)
+			stream.Send(&calculatorpb.FindMaximumRequest{
+				Number: number,
+			})
+			time.Sleep(1000 * time.Millisecond)
+		}
+		stream.CloseSend()
+	}()
+
+	//receive go routine
+	go func() {
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Fatalf("Error while reading server stream: %v", err)
+				break
+			}
+			maximum := res.GetMaximum()
+			fmt.Printf("Received a new maximum of...%v \n", maximum)
+		}
+		close(waitc)
+	}()
+
+	<-waitc
 
 }
