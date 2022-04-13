@@ -34,6 +34,14 @@ message LongGreateResponse{
     string result = 1;
 }
 
+message GreetEveryoneRequest{
+    Greeting greeting =1;
+}
+
+message GreetEveryoneResponse{
+    string result = 1;
+}
+
 
 service GreetService{
 
@@ -46,4 +54,8 @@ service GreetService{
     //streaming client
     //note: jika client stream, maka method stream didefinisikan diawal
     rpc LongGreate(stream LongGreateRequest) returns (LongGreateResponse) {};
+
+
+    //bidi Streaming
+    rpc GreetEveryone(stream GreetEveryoneRequest) returns (stream GreetEveryoneResponse) {};
 }
