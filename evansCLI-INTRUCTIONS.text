@@ -1,0 +1,8 @@
+evans -p P0RT -r = connect to GRPC server
+
+show package = show all package in GRPC server
+show service = show all service in GRPC SERVER
+show message = show all Request & response in GRPC SERVER
+desc MESSAGE = show all request in model GRPC server
+service GRPC SERVICE = swith to service
+call (service) = execute service
